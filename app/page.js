@@ -1,113 +1,292 @@
-import Image from "next/image";
+'use client';
+import { useEffect, useState } from 'react';
+import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
+import Alert from 'react-bootstrap/Alert';
+import { Container, Row, Col } from 'react-bootstrap';
+import { FaBone } from 'react-icons/fa'; // Import bone icon
 
-export default function Home() {
+export default function Dashboard() {
+  const [pets, setPets] = useState([]);
+  const [owners, setOwners] = useState([]);
+  const [showPetModal, setShowPetModal] = useState(false);
+  const [showOwnerModal, setShowOwnerModal] = useState(false);
+  const [modalType, setModalType] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    species: '',
+    breed: '',
+    dateOfBirth: '',
+    ownerID: '',
+  });
+  const [ownerFormData, setOwnerFormData] = useState({
+    ownerName: '',
+    ownerContactDetails: '',
+    ownerAddress: '',
+  });
+  const [successMessage, setSuccessMessage] = useState('');
+  const [showAlert, setShowAlert] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    fetchPets();
+    fetchOwners();
+  }, []);
+
+  const fetchPets = () => {
+    fetch('http://localhost/petshop/pets.php?action=getPets')
+      .then((response) => response.json())
+      .then((data) => setPets(data))
+      .catch((error) => console.error('Error:', error));
+  };
+
+  const fetchOwners = () => {
+    fetch('http://localhost/petshop/pets.php?action=getOwners')
+      .then((response) => response.json())
+      .then((data) => setOwners(data))
+      .catch((error) => console.error('Error:', error));
+  };
+
+  const handleAddOrEditPet = (e) => {
+    e.preventDefault();
+    const action = modalType === 'add' ? 'addPet' : 'editPet';
+
+    fetch(`http://localhost/petshop/pets.php?action=${action}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({ ...formData }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          fetchPets();
+          setSuccessMessage(`${modalType === 'add' ? 'Added' : 'Edited'} pet successfully!`);
+          setShowAlert(true);
+          setShowPetModal(false);
+          setFormData({
+            name: '',
+            species: '',
+            breed: '',
+            dateOfBirth: '',
+            ownerID: '',
+          });
+          setErrorMessage('');
+        } else {
+          setErrorMessage('Failed to add/edit pet.');
+        }
+      })
+      .catch((error) => console.error('Error:', error));
+  };
+
+  const handleAddOwner = (e) => {
+    e.preventDefault();
+
+    fetch('http://localhost/petshop/pets.php?action=addOwner', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({ ...ownerFormData }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.success) {
+          fetchOwners();
+          setSuccessMessage('Owner added successfully!');
+          setShowAlert(true);
+          setShowOwnerModal(false);
+          setOwnerFormData({
+            ownerName: '',
+            ownerContactDetails: '',
+            ownerAddress: '',
+          });
+        } else {
+          setErrorMessage('Failed to add owner.');
+        }
+      })
+      .catch((error) => console.error('Error:', error));
+  };
+
+  const openPetModal = () => {
+    setModalType('add');
+    setShowPetModal(true);
+  };
+
+  const openOwnerModal = () => {
+    setShowOwnerModal(true);
+  };
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">app/page.js</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    <>
+      <Container style={{ marginTop: '2rem', backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '8px' }}>
+        <Row>
+          <Col>
+            <h1 style={{ textAlign: 'center', marginBottom: '20px', color: '#343a40' }}>Pet Clinic Management</h1>
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <Button variant="primary" onClick={openPetModal} style={{ marginRight: '10px' }}>
+                <FaBone style={{ marginRight: '5px' }} /> Add Pet
+              </Button>
+              <Button variant="secondary" onClick={openOwnerModal}>
+                Add Owner
+              </Button>
+            </div>
+            <h2 style={{ textAlign: 'center', marginTop: '20px', color: '#343a40' }}>Pet List</h2>
+            <p style={{ textAlign: 'center', marginBottom: '20px', color: '#6c757d' }}>
+              Manage all your beloved pets here. Add, edit, or remove pet information easily!
+            </p>
+            <table className="table table-bordered" style={{ textAlign: 'center' }}>
+              <thead className="table-dark">
+                <tr>
+                  <th>Owner's Name</th>
+                  <th>Pet Name</th>
+                  <th>Species</th>
+                  <th>Breed</th>
+                  <th>Date Of Birth</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pets.map((pet) => (
+                  <tr key={pet.PetID}>
+                    <td>{pet.OwnerName}</td>
+                    <td>{pet.PetName}</td>
+                    <td>{pet.SpeciesName}</td>
+                    <td>{pet.BreedName}</td>
+                    <td>{pet.DateOfBirth}</td>
+                    <td>
+                      <Button variant="warning" onClick={() => {
+                        setFormData({
+                          name: pet.PetName,
+                          species: pet.SpeciesName,
+                          breed: pet.BreedName,
+                          dateOfBirth: pet.DateOfBirth,
+                          ownerID: pet.OwnerID,
+                        });
+                        setModalType('edit');
+                        setShowPetModal(true);
+                      }}>
+                        Edit
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {showAlert && <Alert variant="success" style={{ marginTop: '20px' }}>{successMessage}</Alert>}
+            {errorMessage && <Alert variant="danger" style={{ marginTop: '20px' }}>{errorMessage}</Alert>}
+          </Col>
+        </Row>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+        {/* Pet Modal */}
+        <Modal show={showPetModal} onHide={() => setShowPetModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>{modalType === 'add' ? 'Add Pet' : 'Edit Pet'}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form onSubmit={handleAddOrEditPet}>
+              <Form.Group controlId="formPetName">
+                <Form.Label>Pet Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter pet name"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="formSpecies">
+                <Form.Label>Species</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter species"
+                  value={formData.species}
+                  onChange={(e) => setFormData({ ...formData, species: e.target.value })}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="formBreed">
+                <Form.Label>Breed</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter breed"
+                  value={formData.breed}
+                  onChange={(e) => setFormData({ ...formData, breed: e.target.value })}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="formDateOfBirth">
+                <Form.Label>Date of Birth</Form.Label>
+                <Form.Control
+                  type="date"
+                  value={formData.dateOfBirth}
+                  onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="formOwnerID">
+                <Form.Label>Owner ID</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter owner ID"
+                  value={formData.ownerID}
+                  onChange={(e) => setFormData({ ...formData, ownerID: e.target.value })}
+                  required
+                />
+              </Form.Group>
+              <Button variant="primary" type="submit" style={{ marginTop: '10px' }}>
+                {modalType === 'add' ? 'Add Pet' : 'Edit Pet'}
+              </Button>
+            </Form>
+          </Modal.Body>
+        </Modal>
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800 hover:dark:bg-opacity-30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
+        {/* Owner Modal */}
+        <Modal show={showOwnerModal} onHide={() => setShowOwnerModal(false)}>
+          <Modal.Header closeButton>
+            <Modal.Title>Add Owner</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form onSubmit={handleAddOwner}>
+              <Form.Group controlId="formOwnerName">
+                <Form.Label>Owner Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter owner's name"
+                  value={ownerFormData.ownerName}
+                  onChange={(e) => setOwnerFormData({ ...ownerFormData, ownerName: e.target.value })}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="formOwnerContactDetails">
+                <Form.Label>Contact Details</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter contact details"
+                  value={ownerFormData.ownerContactDetails}
+                  onChange={(e) => setOwnerFormData({ ...ownerFormData, ownerContactDetails: e.target.value })}
+                  required
+                />
+              </Form.Group>
+              <Form.Group controlId="formOwnerAddress">
+                <Form.Label>Address</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Enter address"
+                  value={ownerFormData.ownerAddress}
+                  onChange={(e) => setOwnerFormData({ ...ownerFormData, ownerAddress: e.target.value })}
+                  required
+                />
+              </Form.Group>
+              <Button variant="primary" type="submit" style={{ marginTop: '10px' }}>
+                Add Owner
+              </Button>
+            </Form>
+          </Modal.Body>
+        </Modal>
+      </Container>
+    </>
   );
 }

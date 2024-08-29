@@ -1,0 +1,86 @@
+/* Custom theme colors */
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #50e3c2;
+    --background-color: #f7f9fc;
+    --text-color: #333;
+  }
+  
+  /* Container styling */
+  .custom-container {
+    background-color: var(--background-color);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Header styling */
+  .custom-header {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+  }
+  
+  /* Search input styling */
+  .search-input {
+    max-width: 400px;
+    border: 2px solid var(--primary-color);
+    border-radius: 30px;
+    padding: 10px 20px;
+  }
+  
+  /* Button styling */
+  .custom-button {
+    background-color: var(--primary-color);
+    border-radius: 30px;
+    padding: 10px 25px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #fff;
+    transition: all 0.3s ease;
+  }
+  
+  .custom-button:hover {
+    background-color: var(--secondary-color);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Table styling */
+  .custom-table {
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .custom-table thead {
+    background-color: var(--primary-color);
+    color: #fff;
+  }
+  
+  .custom-table th, .custom-table td {
+    padding: 20px;
+    font-size: 1.1rem;
+    text-align: left;
+  }
+  
+
+  .custom-modal .modal-content {
+    border-radius: 15px;
+  }
+  
+  .custom-modal-header {
+    background-color: var(--primary-color);
+    color: #fff;
+    border-bottom: none;
+  }
+  
+  .custom-input {
+    border-radius: 30px;
+    padding: 10px 20px;
+    border: 2px solid var(--primary-color);
+  }
+  
